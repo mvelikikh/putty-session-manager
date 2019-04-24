@@ -1,0 +1,2 @@
+class SessionAttributeNotFoundError(Exception):
+    pass

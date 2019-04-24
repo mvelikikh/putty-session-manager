@@ -1,0 +1,2 @@
+class InputParameterError(Exception):
+    pass
