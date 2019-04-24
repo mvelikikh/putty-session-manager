@@ -14,7 +14,7 @@ setup(
     version=version,
     author='Mikhail Velikikh',
     author_email='mvelikikh@gmail.com',
-    url='http://github.com/andrix/python-snappy',
+    url='https://github.com/mvelikikh/putty-session-manager',
     description='Python library for PuTTY session management',
     long_description=long_description,
     keywords='putty',
