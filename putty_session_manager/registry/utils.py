@@ -1,9 +1,10 @@
 import re
 import winreg
 
-from ..error import SessionNotFoundError
 from ..error import InputParameterError
+from ..error import SessionAlreadyExistsError
 from ..error import SessionAttributeNotFoundError
+from ..error import SessionNotFoundError
 
 REG_PATH = 'Software\SimonTatham\PuTTY\Sessions'
 
@@ -29,14 +30,9 @@ def get_sessions():
     Get PuTTY sessions as list(name)
     """
     reg_key = get_sessions_reg_key()
-    num_keys, num_values, date_mod = winreg.QueryInfoKey(reg_key)
+    num_keys, _, _ = winreg.QueryInfoKey(reg_key)
 
-    sessions = []
-    for i in range(0, num_keys):
-        name = winreg.EnumKey(reg_key, i)
-        sessions.append(name)
-
-    return sessions
+    return [winreg.EnumKey(reg_key, i) for i in range(num_keys)]
 
 def get_session_reg_key(name, mode='R'):
     """
@@ -63,24 +59,16 @@ def get_session(name):
     """
     reg_key = get_session_reg_key(name)
 
-    child_keys, num_values, date_mod = winreg.QueryInfoKey(reg_key)
+    _, num_values, _ = winreg.QueryInfoKey(reg_key)
 
-    attrs = []
-    for i in range(0, num_values):
-        name, value, type = winreg.EnumValue(reg_key, i)
-        attrs.append([name, value])
-
-    return attrs
+    return [[name, value] for name, value, _ in [\
+        winreg.EnumValue(reg_key, i) for i in range(num_values)]]
 
 def csv_to_pattern_list(csv_value):
     """
     converts comma-separated string to pattern list
     """
-    patterns = []
-    for pattern in csv_value.split(','):
-        patterns.append(re.compile(pattern))
-
-    return patterns
+    return [re.compile(pattern) for pattern in csv_value.split(',')]
 
 def get_matching_keys(session, keys):
     """
@@ -90,8 +78,8 @@ def get_matching_keys(session, keys):
     patterns = csv_to_pattern_list(keys)
 
     matching_keys = []
-    child_keys, num_values, n2 = winreg.QueryInfoKey(reg_key)
-    for i in range(0, num_values):
+    _, num_values, _ = winreg.QueryInfoKey(reg_key)
+    for i in range(num_values):
         name, value, type = winreg.EnumValue(reg_key, i)
         if string_matches(test_string=name,patterns=patterns):
             matching_keys.append({'name' : name, 'value': value})
@@ -124,30 +112,20 @@ def copy_session_keys(from_session, keys, sessions):
             winreg.SetValueEx(reg_key, key_name, 0, type, new_value)
 
 def string_matches(test_string, patterns):
-    matched = False
-    for pattern in patterns:
-        match = pattern.match(test_string)
-        if match:
-            matched = True
-            break
-
-    return matched
+    return any(pattern.match(test_string) for pattern in patterns)
 
 def get_matching_sessions(except_session, session_pattern):
     """
     Returns sessions matching pattern
     """
     reg_key = get_sessions_reg_key()
-    num_keys, num_values, date_mod = winreg.QueryInfoKey(reg_key)
+    num_keys, _, _ = winreg.QueryInfoKey(reg_key)
 
     patterns = csv_to_pattern_list(session_pattern)
 
-    sessions = []
-    for i in range(0, num_keys):
-        name = winreg.EnumKey(reg_key, i)
-        if name != except_session:
-            if string_matches(test_string=name, patterns=patterns):
-                sessions.append(name)
+    sessions = [winreg.EnumKey(reg_key, i) for i in range(num_keys)]
+    is_matched_session = lambda s: s != except_session and string_matches(s, patterns)
+    sessions = list(filter(is_matched_session, sessions))
 
     if len(sessions)==0:
         raise SessionNotFoundError('No sessions matching given pattern: "%s"' %
@@ -172,8 +150,17 @@ def create_session_key(session):
     """
     Create registry key for a session
     """
+    try:
+        _ = get_session_reg_key(session)
+        raise SessionAlreadyExistsError(
+                'Specified session "%s" already exists' % (session))
+    except SessionNotFoundError as e:
+        pass
+
     sessions = get_sessions_reg_key(mode='W')
     _ = winreg.CreateKey(sessions, session)
+    reg_key = get_session_reg_key(session, mode='W')
+    winreg.SetValueEx(reg_key, 'UserName', 0, winreg.REG_SZ, '')
 
 def copy(source, dest):
     """

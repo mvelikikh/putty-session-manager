@@ -1,18 +1,37 @@
 import putty_session_manager as psm
 from unittest import TestCase
 
-DEFAULT_SESSION = 'Default%20Settings'
-AUX_SESSION = 'test-case-session'
+DEFAULT_SESSION = 'test-case-default'
+AUX_SESSION = 'test-case-aux'
 NO_SUCH_SESSION = 'no_such_session'
+
+def delete_session(session):
+    """
+    Delete session if it exists
+    """
+    try:
+        psm.delete(Container({'session': session}))
+    except psm.SessionNotFoundError as e:
+        print('"%s" does not exist' % (session))
+
+def delete_default_session():
+    """
+    Delete default session if it exists
+    """
+    delete_session(DEFAULT_SESSION)
 
 def delete_aux_session():
     """
     Delete auxiliary session if it exists
     """
-    try:
-        psm.delete(Container({'session': AUX_SESSION}))
-    except psm.SessionNotFoundError as e:
-        print('"%s" does not exist' % (AUX_SESSION))
+    delete_session(AUX_SESSION)
+
+def create_default_session():
+    """
+    Creates default session if it does not exist.
+    """
+    delete_default_session()
+    psm.create(Container({'session': DEFAULT_SESSION}))
 
 class Container(object):
     """
@@ -23,9 +42,28 @@ class Container(object):
         for k, v in dictionary.items():
             setattr(self, k, v)
 
+class CreateTest(TestCase):
+
+    def test_create_session(self):
+        pass
+
+    def test_second_create_should_fail(self):
+        self.assertRaises(
+            psm.SessionAlreadyExistsError,
+            psm.create,
+            Container({'session': DEFAULT_SESSION})
+        )
+
+    def setUp(self):
+        create_default_session()
+
+    def tearDown(self):
+        delete_default_session()
+
 class GetTest(TestCase):
 
     def test_get_default_session(self):
+        create_default_session()
         try:
             psm.get(Container({'session': DEFAULT_SESSION}))
         except Exception as err:
@@ -40,6 +78,9 @@ class GetTest(TestCase):
             psm.get,
             Container({'session': NO_SUCH_SESSION})
         )
+
+    def tearDown(self):
+        delete_default_session()
 
 class ListTest(TestCase):
 
@@ -94,8 +135,11 @@ class CopyAttrTest(TestCase):
                 % ('copy-attr', err.__class__.__name__, err)
             )
 
+    def setUp(self):
+        create_default_session()
 
     def tearDown(self):
+        delete_default_session()
         delete_aux_session()
 
 class CopyTest(TestCase):
@@ -119,8 +163,12 @@ class CopyTest(TestCase):
                 % ('copy', err.__class__.__name__, err)
             )
 
+    def setUp(self):
+        create_default_session()
+
     def tearDown(self):
         delete_aux_session()
+        delete_default_session()
 
 class ComplexTest(TestCase):
 
@@ -134,6 +182,9 @@ class ComplexTest(TestCase):
                 '%s raised unexpected error "%s": "%s"' \
                 % ('copy', err.__class__.__name__, err)
             )
+    
+    def setUp(self):
+        create_default_session()
 
     def tearDown(self):
         delete_aux_session()

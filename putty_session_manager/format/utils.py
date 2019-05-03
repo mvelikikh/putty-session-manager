@@ -8,10 +8,10 @@ def list_to_table(column_names, values):
     """
     table = PrettyTable(column_names)
     table._set_max_width(MAX_WIDTH)
-    for i in range(0, len(column_names)):
+    for i in range(len(column_names)):
         table.align[column_names[i]] = 'l'
 
-    for i in range(0, len(values)):
+    for i in range(len(values)):
         row = values[i]
         if isinstance(row, list):
             table.add_row(row)

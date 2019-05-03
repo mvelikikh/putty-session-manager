@@ -15,6 +15,17 @@ def cmdline_main():
         description="Available commands"
     )
 
+    parser_create = subparsers.add_parser(
+        'create',
+        help="Initialize empty session")
+
+    parser_create.add_argument(
+        'session',
+        metavar="<session>",
+        help="Session name")
+
+    parser_create.set_defaults(func=ops.create)
+
     parser_list = subparsers.add_parser(
         'list',
         aliases=["ls"],
