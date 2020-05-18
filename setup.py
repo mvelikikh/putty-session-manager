@@ -1,10 +1,7 @@
 from setuptools import setup, find_packages
 
-version = '0.0.1'
-long_description = """
-Python library and command line utility to automate common PuTTY session
-management tasks.
-"""
+version = '1.0.dev6'
+
 ext_modules = []
 install_requires = ['prettytable']
 setup_requires = []
@@ -15,20 +12,19 @@ setup(
     author='Mikhail Velikikh',
     author_email='mvelikikh@gmail.com',
     url='https://github.com/mvelikikh/putty-session-manager',
-    description='Python library for PuTTY session management',
-    long_description=long_description,
+    description='Python command-line utility for PuTTY session management',
+    long_description=open('README.md').read(),
+    long_description_content_type='text/markdown',
     keywords='putty',
-    license='BSD',
+    license='GNU General Public License (GPL)',
     classifiers=['Development Status :: 4 - Beta',
                  'Topic :: Internet',
                  'Topic :: Software Development',
                  'Topic :: Software Development :: Libraries',
-                 'License :: OSI Approved :: BSD License',
+                 'License :: OSI Approved :: GNU General Public License (GPL)',
                  'Intended Audience :: Developers',
                  'Intended Audience :: System Administrators',
-                 'Operating System :: MacOS :: MacOS X',
-                 # 'Operating System :: Microsoft :: Windows', -- Not tested yet
-                 'Operating System :: POSIX',
+                 'Operating System :: Microsoft :: Windows',
                  'Programming Language :: Python :: 3.7',
                  ],
     ext_modules=ext_modules,

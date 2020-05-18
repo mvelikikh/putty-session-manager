@@ -1,60 +1,64 @@
-# putty-session-manager
-Python library and command line utility for basic management of PuTTY sessions on Windows
-# Dependencies
-- PrettyTable
+# PuTTY Session Manager
+Python command line utility for basic management of PuTTY sessions on Windows
 
-You can install PrettyTable with the following command:
+# Installation
 
-`pip install PrettyTable`
-# Build & Install
-Build:
+## From PyPI
 
-`python setup.py build`
+You can install `putty-session-manager` using pip:
 
-Install:
+`pip install putty-session-manager`
 
-`python setup.py install`
+## From source
 
-# Run tests
+You can also clone the project's repository and install from source:
 
-`python test_putty_session_manager.py -v -b`
+```
+git clone https://github.com/mvelikikh/putty-session-manager
+cd putty-session-manager
+pip install .
+```
 
-# Command line usage
+# Usage
 
 You can invoke putty-session-manager from the commandline after installation as follows:
 
+`psm`
+or
 `python -m putty_session_manager`
 
 Listing PuTTY sessions:
 
-`python -m putty_session_manager list`
+`psm list`
 
 Getting attributes of a given session:
 
-`python -m putty_session_manager get my_session`
+`psm get my_session`
 
 Copying a session:
 
-`python -m putty_session_manager copy source_session dest_session`
+`psm copy source_session dest_session`
 
 Copying attributes from one session to another:
 
-`python -m putty_session_manager copy-attr source_session dest_session_pattern attribute_pattern`
+`psm copy-attr source_session dest_session_pattern attribute_pattern`
 
 Example:
 
-`python -m putty_session_manager copy-attr src_session dst_sess_a.*,dst_sess_b.* Colour*`
+`psm copy-attr src_session dst_sess_a.*,dst_sess_b.* Colour*`
 
 Deleting a session:
 
-`python -m putty_session_manager delete my_session`
+`psm delete my_session`
 
 You can get help by running
 
-`python -m putty_session_manager --help`
+`psm --help`
 
 # Prerequisites
 
 Operating System: Microsoft Windows.
+
+[PuTTY SSH Client](https://www.putty.org/)
 
 I have written it to automate common tasks of managing PuTTY sessions on Windows.
